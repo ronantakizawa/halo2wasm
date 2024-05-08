@@ -1,4 +1,4 @@
-use std::io;
+use wasm_bindgen::prelude::*;
 use halo2_proofs::{
     circuit::{AssignedCell, Layouter, Region, SimpleFloorPlanner, Value},
     plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Selector},
@@ -6,7 +6,32 @@ use halo2_proofs::{
     dev::MockProver,
 };
 
-#[derive(Clone)]
+#[cfg(feature = "console_error_panic_hook")]
+pub fn set_panic_hook() {
+    console_error_panic_hook::set_once();
+}
+
+#[wasm_bindgen]
+pub struct IPCheckCircuit {
+    ip_string: String,
+}
+
+#[wasm_bindgen]
+impl IPCheckCircuit {
+    #[wasm_bindgen(constructor)]
+    pub fn new(ip_string: String) -> IPCheckCircuit {
+        set_panic_hook();
+        Self { ip_string }
+    }
+
+    #[wasm_bindgen]
+    pub fn verify(&self) -> bool {
+        let k = 5;
+        let prover = MockProver::run(k, self, vec![]).unwrap();
+        prover.verify().is_ok()
+    }
+}
+
 struct CharCircuit {
     value: AssignedCell<Fp, Fp>,
 }
@@ -17,21 +42,15 @@ impl CharCircuit {
     }
 
     fn constrain(&self, region: &mut Region<'_, Fp>, expected: u8, selector: Selector) -> Result<(), Error> {
-        selector.enable(region, 0)?;
-
+        let _ = selector.enable(region, 0);
         let expected_val = Fp::from(expected as u64);
         region.constrain_constant(self.value.cell(), expected_val)?;
-
         Ok(())
     }
 }
 
-struct IPCheckCircuit {
-    ip_string: String,
-}
-
 #[derive(Clone)]
-struct IPCheckConfig {
+pub struct IPCheckConfig {
     chars: Vec<Column<Advice>>,
     selector: Selector,
 }
@@ -78,23 +97,5 @@ impl Circuit<Fp> for IPCheckCircuit {
 
             Ok(())
         })
-    }
-}
-
-fn main() {
-    println!("Please enter an IP address:");
-    let mut ip_string = String::new();
-    io::stdin().read_line(&mut ip_string).expect("Failed to read line");
-    let ip_string = ip_string.trim().to_string();  // Trim the newline character
-
-    let circuit = IPCheckCircuit {
-        ip_string,
-    };
-    let k = 5;
-
-    let prover = MockProver::run(k, &circuit, vec![]).unwrap();
-    match prover.verify() {
-        Ok(_) => println!("Circuit verified successfully!"),
-        Err(e) => println!("Verification failed: {:?}", e),
     }
 }

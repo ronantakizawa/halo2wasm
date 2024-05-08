@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IP Verification</title>
+    <script type="module">
+        import init, { IPCheckCircuit } from './myhalo2.js';
+
+        async function run() {
+            await init();
+
+            // Assuming localhost for demonstration
+            const ipInput = window.location.hostname; // This will be 'localhost' if accessed via localhost
+            const circuit = new IPCheckCircuit(ipInput);
+            const result = circuit.verify();
+            console.log("IP:", ipInput, "Verification result:", result ? "Valid IP" : "Invalid IP");
+        }
+
+        run();
+    </script>
+</head>
+<body>
+    <h1>IP Verification</h1>
+</body>
+</html>
