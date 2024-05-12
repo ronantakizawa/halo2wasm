@@ -8,12 +8,17 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]  # Necessary to compile to Wasm
 
 [dependencies]
-halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "a898d65ae3ad3d41987666f6a03cfc15edae01c4"}
+halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "a898d65ae3ad3d41987666f6a03cfc15edae01c4" }
+rand = "0.8"
 wasm-bindgen = "0.2"
-
+wasm-bindgen-futures = "0.4"
+getrandom = { version = "0.2.15", features = ["js"] }  # Add getrandom explicitly with the js feature
+web-sys = { version = "0.3", features = ["console"] }
 # Panic hook for better debugging in Wasm
 console_error_panic_hook = { version = "0.1.6", optional = true }
-wasm-bindgen-futures = "0.4"
 
 [features]
 default = ["console_error_panic_hook"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

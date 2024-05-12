@@ -2,24 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IP Verification</title>
+    <title>IP Verification with File Download</title>
     <script type="module">
         import init, { IPCheckCircuit } from './myhalo2.js';
 
+        let circuit;  
+
         async function run() {
             await init();
+            const ipInput = window.location.hostname; // Typically 'localhost' if accessed locally
+            console.log(ipInput)
+            const downloadButton = document.getElementById('downloadButton');
 
-            // Assuming localhost for demonstration
-            const ipInput = window.location.hostname; // This will be 'localhost' if accessed via localhost
-            const circuit = new IPCheckCircuit(ipInput);
-            const result = circuit.verify();
-            console.log("IP:", ipInput, "Verification result:", result ? "Valid IP" : "Invalid IP");
+            try {
+                circuit = new IPCheckCircuit(ipInput);
+                const result = await circuit.verify();
+                console.log(`IP: ${ipInput}, Verification result: ${result ? 'Valid IP' : 'Invalid IP'}`);
+                downloadButton.disabled = false; // Enable download button on successful verification
+                downloadButton.addEventListener('click', downloadFile); // Connect the downloadFile function
+            } catch (error) {
+                console.error('Error in verification:', error);
+                downloadButton.textContent = 'Verification Failed - Try Again';
+            }
         }
 
-        run();
+        async function downloadFile() {
+            const downloadButton = document.getElementById('downloadButton');
+            downloadButton.disabled = true;
+            downloadButton.textContent = 'Downloading...';
+            try {
+                const binaryData = await circuit.get_proof();
+                const blob = new Blob([binaryData], { type: 'application/octet-stream' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "proof.bin";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                downloadButton.textContent = 'Download Proof';
+                downloadButton.disabled = false;
+            } catch (error) {
+                console.error('Failed to download file:', error);
+                downloadButton.textContent = 'Download Failed - Try Again';
+                downloadButton.disabled = false;
+            }
+        }
+
+        window.addEventListener('load', run);
     </script>
 </head>
 <body>
     <h1>IP Verification</h1>
+    <button id="downloadButton" disabled>Download Proof</button>
 </body>
 </html>
