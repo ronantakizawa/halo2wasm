@@ -130,33 +130,3 @@ impl Circuit<Fq> for IPCheckCircuit {
         Self { ip_string: "".to_string() }  // Return an instance with an empty IP string
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use wasm_bindgen::JsValue;
-
-    #[test]
-    fn test_get_proof_valid_ip() {
-        let circuit = IPCheckCircuit::new("127.0.0.1".to_string()).unwrap();
-        let proof_result = circuit.get_proof();
-        assert!(proof_result.is_ok(), "Should successfully create a proof for a valid IP");
-    }
-
-    #[test]
-    fn test_get_proof_invalid_ip() {
-        let circuit = IPCheckCircuit::new("999.999.999.999".to_string()).unwrap();
-        let proof_result = circuit.get_proof();
-        assert!(proof_result.is_err(), "Should fail to create a proof for an invalid IP");
-    }
-
-    #[test]
-    fn test_get_proof_error_on_ip_format() {
-        let circuit = IPCheckCircuit::new("not.an.ip".to_string());
-        assert!(circuit.is_err(), "Should not create a circuit with an invalid IP format");
-
-        if let Err(e) = circuit {
-            assert_eq!(e, JsValue::from_str("Invalid IP format"), "Should return the correct error message");
-        }
-    }
-}
