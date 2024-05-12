@@ -27,28 +27,30 @@
         }
 
         async function downloadFile() {
-            const downloadButton = document.getElementById('downloadButton');
-            downloadButton.disabled = true;
-            downloadButton.textContent = 'Downloading...';
-            try {
-                const binaryData = await circuit.get_proof();
-                const blob = new Blob([binaryData], { type: 'application/octet-stream' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = "proof.bin";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                downloadButton.textContent = 'Download Proof';
-                downloadButton.disabled = false;
-            } catch (error) {
-                console.error('Failed to download file:', error);
-                downloadButton.textContent = 'Download Failed - Try Again';
-                downloadButton.disabled = false;
-            }
-        }
+    const downloadButton = document.getElementById('downloadButton');
+    downloadButton.disabled = true;
+    downloadButton.textContent = 'Downloading...';
+    try {
+        const binaryData = await circuit.get_proof();
+        // Encode binary data to Base64
+        const base64Data = btoa(String.fromCharCode.apply(null, new Uint8Array(binaryData)));
+        const blob = new Blob([base64Data], { type: 'text/plain' });  // Use 'text/plain' for text file
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "proof.txt";  // Download as a .txt file
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        downloadButton.textContent = 'Download Proof';
+        downloadButton.disabled = false;
+    } catch (error) {
+        console.error('Failed to download file:', error);
+        downloadButton.textContent = 'Download Failed - Try Again';
+        downloadButton.disabled = false;
+    }
+}
 
         window.addEventListener('load', run);
     </script>
